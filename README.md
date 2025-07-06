@@ -14,7 +14,7 @@ Criar um sistema didático e visualmente funcional de geração de mundos aleat�
 - Visualização clara com canvas
 
 
-🔧 Recursos já implementados
+## 🔧 Recursos já implementados
 
 - Geração de grid 15x15 com células de terreno
 - Tipagem com Terrain e WorldCell
@@ -23,7 +23,7 @@ Criar um sistema didático e visualmente funcional de geração de mundos aleat�
 - Leitura de tileset via coordenadas absolutas
 -Correção do carregamento assíncrono das imagens
 
-📈 Próximos objetivos
+## 📈 Próximos passos
 
 - Bitmasking para transições suaves entre terrenos
 - Geração por Perlin Noise para formar regiões naturais
@@ -45,7 +45,7 @@ Criar um sistema didático e visualmente funcional de geração de mundos aleat�
 ## 🧱 Estrutura do Projeto
 
 ```
-📦 world-generator
+📦 mapGenerator
 ├── index.html
 ├── main.ts
 ├── /assets
@@ -60,33 +60,33 @@ Criar um sistema didático e visualmente funcional de geração de mundos aleat�
 
 
 ```
-git clone https://github.com/seu-usuario/world-generator.git
+git clone https://github.com/matheus-steinhagen/mapGenerator
 cd world-generator
 npm install
 npm run dev
 ```
 Acesse o projeto em: http://localhost:5173
 
-📦 Requisitos
+## 📦 Requisitos
 Node.js v18 ou superior
 Navegador moderno com suporte a ES Modules
 
-🧠 Dica para Contribuintes
+## 🧠 Dica para Contribuintes
 Você pode clonar a branch main e iniciar sua própria linha de evolução!
 
-Em breve: CONTRIBUTING.md com:
+> Em breve: CONTRIBUTING.md com:
+> - Regras de estilo e arquitetura
+> - Como adicionar novos tipos de células
+> - Como criar novos agentes e comportamentos
 
-Regras de estilo e arquitetura
-Como adicionar novos tipos de células
-Como criar novos agentes e comportamentos
-
-👨‍💻 Autor
+## 👨‍💻 Autor
 Matheus Steinhagen
 Desenvolvedor autodidata com foco em:
 
 🧱 Arquitetura de Software
 🧠 Inteligência Artificial Aplicada
 🔐 Cibersegurança e minimalismo digital
-📄 Licença
+
+## 📄 Licença
 MIT — Este projeto é livre para estudo, uso e modificação.
 Créditos são sempre bem-vindos!
