@@ -80,12 +80,11 @@ Você pode clonar a branch main e iniciar sua própria linha de evolução!
 > - Como criar novos agentes e comportamentos
 
 ## 👨‍💻 Autor
-Matheus Steinhagen
-Desenvolvedor autodidata com foco em:
+Matheus Steinhagen - Desenvolvedor autodidata com foco em:
 
-🧱 Arquitetura de Software
-🧠 Inteligência Artificial Aplicada
-🔐 Cibersegurança e minimalismo digital
+- 🧱 Arquitetura de Software
+- 🧠 Inteligência Artificial Aplicada
+- 🔐 Cibersegurança e minimalismo digital
 
 ## 📄 Licença
 MIT — Este projeto é livre para estudo, uso e modificação.
