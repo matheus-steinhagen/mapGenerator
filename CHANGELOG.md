@@ -1,5 +1,3 @@
-# 🗂 CHANGELOG
-
 ## Versão 1.0 — Primeira versão funcional
 
 ### 🛠️ Implementações
