@@ -1,13 +1,9 @@
+import type { Terrain, WorldCell } from "./type";
+import { perlin2D } from "./perlinNoise";
+
 const canvas = document.getElementById('world') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 const tileSize = 16;
-
-//Preparando tipos
-type Terrain = 'grass' | 'water' | 'mud'; // tipo de terreno
-
-type WorldCell = {
-    terrain:Terrain; // O tipo WorldCell possui uma propriedade do tipo Terrain
-}
 
 //Número de linhas e colinas da grid
 const rows = 15;
@@ -20,20 +16,26 @@ canvas.height = cols * tileSize;
 //A constante world é uma matriz de WorldCell
 const world:WorldCell[][] = [];
 
+const offsetX = Math.random() * 1000;
+const offsetY = Math.random() * 1000;
+const frequency = 0.08; //Controla a escala do rupido (quanto menor, mais "zoom")
+
 //Iterando em cada linha da matriz
 for(let y = 0; y < rows; y++){
 
-    //Definando que a linha é um array de WorldCell
+    //Definindo que a linha é um array de WorldCell
     const row:WorldCell[] = [];
 
     //Iterando em cada célula da linha (coluna)
     for(let x = 0; x < cols; x++){
 
-        //Cada tipo tem 1/3 de chance de aparecer
-        const r = Math.random(); //Atribui a r um valor aleatório entre 0 e 1
-        let terrain:Terrain = 'water';
-        if(r < 0.50) terrain = 'grass';
-        else if(r < 0.70) terrain = 'mud';
+        //Usamos Perlin para gerar padrões naturais
+        const noise = perlin2D((x + offsetX) * frequency, (y + offsetY) * frequency) //Ruído varia de -1 a 1
+        const r = (noise + 1) / 2;
+        
+        let terrain:Terrain = 'water'; //Padrão
+        if(r > 0.42) terrain = 'mud';
+        if(r > 0.48) terrain = 'grass'; //Ponto mais alto
 
         row.push({ terrain }); //Adiciona uma célula na linha
     }
@@ -73,21 +75,16 @@ function loadImage(img: HTMLImageElement): Promise<void> {
 }
 
 //Renderizando mundo
-function drawWorld(){
-    console.log('Estou sendo chamado');
-    for(let y = 0; y < rows; y++){
-        for(let x = 0; x < cols; x++){
+function drawBaseLayer() {
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
             const cell = world[y][x];
             const tile = terrainTileData[cell.terrain];
-            const { x: sx, y: sy } = tile;
-
-            ctx.drawImage(
-                tile.image,
-                sx, sy,
-                tileSize, tileSize,
-                x * tileSize, y * tileSize,
-                tileSize, tileSize
-            )
+            ctx.drawImage(tile.image, tile.x, tile.y, tileSize, tileSize, x * tileSize, y * tileSize, tileSize, tileSize);
         }
     }
+}
+
+function drawWorld() {
+    drawBaseLayer();
 }
