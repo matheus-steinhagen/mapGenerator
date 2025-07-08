@@ -23,12 +23,11 @@
 - Criar camadas para separar o terreno base das transições e objetos.
 - Resolver questões de prioridade e sobreposição nas transições de terreno.
 
----
+
+## Versão 0.1 — Primeira versão funcional
 
 **Notas:**
 Esta versão foca na melhoria visual e estrutural da geração do mapa, preparando o terreno para transições visuais mais complexas e realistas nas próximas versões.
-
-## Versão 0.1 — Primeira versão funcional
 
 ### Implementações
 - Criação da estrutura principal em TypeScript
