@@ -1,3 +1,5 @@
+# 🗂 CHANGELOG
+
 ## Versão 0.2 — Ruído de Perlin
 
 ### Novidades
@@ -21,7 +23,6 @@
 - Criar camadas para separar o terreno base das transições e objetos.
 - Resolver questões de prioridade e sobreposição nas transições de terreno.
 
----
 
 **Notas:**
 Esta versão foca na melhoria visual e estrutural da geração do mapa, preparando o terreno para transições visuais mais complexas e realistas nas próximas versões.
