@@ -1,3 +1,5 @@
+# 🗂 CHANGELOG
+
 ## v0.3 — Estrutura modular com classes Grid e Render
 
 ### ✨ Novidades
@@ -22,8 +24,6 @@
 - Introduzir sistema de biomas com mapas auxiliares (umidade, temperatura)
 - Adicionar objetos visuais como árvores, pedras e ruínas
 
----
-
 ## Versão 0.2 — Ruído de Perlin
 
 ### Novidades
@@ -47,12 +47,11 @@
 - Criar camadas para separar o terreno base das transições e objetos.
 - Resolver questões de prioridade e sobreposição nas transições de terreno.
 
----
+
+## Versão 0.1 — Primeira versão funcional
 
 **Notas:**
 Esta versão foca na melhoria visual e estrutural da geração do mapa, preparando o terreno para transições visuais mais complexas e realistas nas próximas versões.
-
-## Versão 0.1 — Primeira versão funcional
 
 ### Implementações
 - Criação da estrutura principal em TypeScript
