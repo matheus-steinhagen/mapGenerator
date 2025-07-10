@@ -16,21 +16,27 @@ Criar um sistema didático e visualmente funcional de geração de mundos aleat�
 
 ## 🔧 Recursos já implementados
 
-- Geração de grid 15x15 com células de terreno
-- Tipagem com Terrain e WorldCell
-- Sorteio aleatório de terrenos com pesos ajustáveis
-- Renderização gráfica com drawImage()
-- Leitura de tileset via coordenadas absolutas
--Correção do carregamento assíncrono das imagens
+- Geração de mapa 2D procedural usando Perlin Noise
+- Refatoração da arquitetura com Render e Grid separados
+- Terrenos modularizados via arquivos JSON individuais
+- Transições suaves entre terrenos com bitmasking
+- Suporte a tiles animados (ex: grama balançando, água ondulando)
+- Camadas separadas: terreno, transição e objetos
+- Objetos com probabilidade de ocorrência (e.g., arbustos, flores)
+- Carregamento dinâmico de imagens (apenas as necessárias)
+- Renderização eficiente com múltiplos tilesets
+- Arquitetura escalável para futuros biomas e efeitos
 
 ## 📈 Próximos passos
 
-- Bitmasking para transições suaves entre terrenos
-- Geração por Perlin Noise para formar regiões naturais
-- Exportação/importação via JSON
-- Layers: terreno base, objetos, entidades, etc.
-- Scroll e movimento de câmera
-- Mini-map e debug overlay
+- Agrupamento natural de vegetação (padrões realistas)
+- Sistema de sombra e iluminação por tile
+- Simulação de clima (chuva, neve, vento)
+- Suporte a entidades móveis (player, NPCs, inimigos)
+- Movimentação no mapa e scroll de câmera
+- Mini-mapa e visualização de debug
+- Exportação/importação de mapas salvos
+- Interface para seleção de terrenos/biomas antes da geração
 
 
 ## 🛠 Tecnologias Usadas
