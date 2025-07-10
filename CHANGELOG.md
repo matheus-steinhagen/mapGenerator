@@ -1,3 +1,27 @@
+# 🗂 CHANGELOG
+
+## Versão 0.4 — Terrenos modulares, animações e objetos
+
+### Novidades
+- Arquitetura baseada em arquivos JSON para cada terreno
+- Suporte a animações por frame em terrenos e objetos
+- Renderização procedural de objetos com chance de aparição
+- Refatoração de `Render` e `Grid` para modularidade e expansão
+- Separação de dados por camadas (`terrain`, `transition`, `object`)
+- Carregamento dinâmico e automático de imagens associadas
+
+### Destaques técnicos
+- `loadTerrainDataFromJSON` carrega e vincula dinamicamente os dados de cada terreno
+- `drawObjects`, `drawTransitions` e `drawTerrain` separados
+- Tipagem forte (`TerrainData`) com base em arquivos externos
+- Pronto para expansão com sombras, agrupamentos e biomas
+
+### Próximos passos (v0.5)
+- Agrupamento natural de objetos
+- Adição de sombras e iluminação simples
+- Transições múltiplas por terreno
+- Introdução de biomas compostos
+
 ## v0.3 — Estrutura modular com classes Grid e Render
 
 ### ✨ Novidades
@@ -22,8 +46,6 @@
 - Introduzir sistema de biomas com mapas auxiliares (umidade, temperatura)
 - Adicionar objetos visuais como árvores, pedras e ruínas
 
----
-
 ## Versão 0.2 — Ruído de Perlin
 
 ### Novidades
@@ -47,12 +69,11 @@
 - Criar camadas para separar o terreno base das transições e objetos.
 - Resolver questões de prioridade e sobreposição nas transições de terreno.
 
----
+
+## Versão 0.1 — Primeira versão funcional
 
 **Notas:**
 Esta versão foca na melhoria visual e estrutural da geração do mapa, preparando o terreno para transições visuais mais complexas e realistas nas próximas versões.
-
-## Versão 0.1 — Primeira versão funcional
 
 ### Implementações
 - Criação da estrutura principal em TypeScript

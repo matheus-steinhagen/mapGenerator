@@ -24,22 +24,22 @@
   },
   "objects": [
     {
-      "name": "bush0",
-      "tileSet": "Vegetation.png",
-      "frames": [229],
-      "chance": 0.003
+      "name": "rock",
+      "tileSet": "Rocks.png",
+      "frames": [42],
+      "chance": 0.005
     },
     {
-      "name": "bush",
-      "tileSet": "Vegetation.png",
-      "frames": [227],
-      "chance": 0.02
+      "name": "rock1",
+      "tileSet": "Rocks.png",
+      "frames": [55],
+      "chance": 0.005
     },
     {
-      "name": "bush2",
-      "tileSet": "Vegetation.png",
-      "frames": [228],
-      "chance": 0.02
+      "name": "rock2",
+      "tileSet": "Rocks.png",
+      "frames": [67],
+      "chance": 0.005
     }
   ]
 }

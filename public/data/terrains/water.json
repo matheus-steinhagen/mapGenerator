@@ -24,40 +24,10 @@
   },
   "objects": [
     {
-      "name": "bush0",
+      "name": "waterFlower",
       "tileSet": "Vegetation.png",
-      "frames": [229],
-      "chance": 0.003
-    },
-    {
-      "name": "bush",
-      "tileSet": "Vegetation.png",
-      "frames": [227],
-      "chance": 0.02
-    },
-    {
-      "name": "bush2",
-      "tileSet": "Vegetation.png",
-      "frames": [228],
-      "chance": 0.02
-    },
-    {
-      "name": "flower",
-      "tileSet": "Vegetation.png",
-      "frames": [578],
-      "chance": 0.007
-    },
-    {
-      "name": "flower2",
-      "tileSet": "Vegetation.png",
-      "frames": [603],
-      "chance": 0.007
-    },
-    {
-      "name": "rock",
-      "tileSet": "Rocks.png",
-      "frames": [55],
-      "chance": 0.007
+      "frames": [285],
+      "chance": 0.005
     }
   ]
 }
