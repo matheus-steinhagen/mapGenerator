@@ -1,5 +1,5 @@
-import type { Terrain, GridCell, TerrainTileInfo } from "./type";
-import { getBitmask, getTransitionTile, grassTiles, dirtTiles } from "./bitmask";
+import type { Terrain, GridCell, TerrainData } from "./type";
+import { getBitmask, getTransitionTile} from "./bitmask";
 
 
 export class Render{
@@ -12,22 +12,17 @@ export class Render{
     private cols:number;
     private rows:number;
 
+    private terrainDataMap: Partial<Record<Terrain, TerrainData>> = {};
+    private loadedImages: Record<string,HTMLImageElement> = {};
 
-    private terrainTileData:Record<Terrain, TerrainTileInfo>
-    private transitions:Partial<Record<Terrain,{
-        to:Terrain;
-        tileset: HTMLImageElement;
-        tileMap:Record<string,number>;
-    }>>;
-
-    //Acessando tileset alvo
-    private floortileset:HTMLImageElement = new Image();
-    private watertileset:HTMLImageElement = new Image();
+    private animationFrame: number = 0;
+    private animationSpeed: number = 45; // menor = mais rápido
 
     constructor(grid:GridCell[][],tileSize:number){
         this.grid = grid;
         this.cols = grid[0].length;
         this.rows = grid.length;
+        this.tileSize = tileSize;
 
         const canvas = document.getElementById('world') as HTMLCanvasElement;
         if (!canvas) throw new Error(`Canvas não encontrado.`);
@@ -37,104 +32,165 @@ export class Render{
 
         this.canvas = canvas;
         this.ctx = ctx;
-        this.tileSize = tileSize;
         this.canvas.width = this.cols * this.tileSize;
         this.canvas.height = this.rows * this.tileSize;
+    }
 
-        this.floortileset.src = './public/assets/Floors_Tiles.png';
-        this.watertileset.src = './public/assets/Water_Tiles.png';
+    public async loadTerrainDataFromJSON(terrainList: Terrain[]){
+        for(const terrain of terrainList){
+            const response = await fetch(`/data/terrains/${terrain}.json`);
+            const data: TerrainData = await response.json();
+            this.terrainDataMap[terrain] = data;
 
-        //Identificando o Tile no documento
-        this.terrainTileData = {
-            water: { image: this.watertileset, x: 32,  y: 192 },
-            grass: { image: this.floortileset, x: 32,  y: 160 },
-            dirt:   { image: this.floortileset, x: 192, y: 160 }
-        };
+            //Carregar tilesets necessários
+            const imagesToLoad: Set<string> = new Set();
+            imagesToLoad.add(data.terrain.tileSet);
 
-        this.transitions = {
-            grass: {
-                to: 'water',
-                tileset: this.watertileset,
-                tileMap: grassTiles,
+            if(data.transitions){
+                for(const key in data.transitions){
+                    imagesToLoad.add(data.transitions[key as Terrain].tileSet);
+                }
+            }
+            if(data.objects){
+                for(const key in data.objects){
+                    imagesToLoad.add(data.objects[key].tileSet)
+                }
+            }
 
-            },
-            dirt: {
-                to: 'grass',
-                tileset: this.floortileset,
-                tileMap: dirtTiles,
-
+            //Carregar imagens
+            for(const src of imagesToLoad){
+                if(!this.loadedImages[src]){
+                    const img = new Image();
+                    img.src = `/assets/${src}`;
+                    await img.decode();
+                    this.loadedImages[src] = img
+                }
             }
         }
     }
 
-    //Renderizando mundo
-    private drawBaseLayer(): void {
+    public generateObjects(): void {
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.cols; x++) {
                 const cell = this.grid[y][x];
+                if (cell.object) continue; // já possui objeto
 
-                const tile = this.terrainTileData[cell.terrain];
-                if(!tile) continue;
+                const data = this.terrainDataMap[cell.terrain];
+                if (!data || !data.objects) continue;
 
-                this.ctx.drawImage(
-                    tile.image,
-                    tile.x, tile.y, this.tileSize, this.tileSize,
-                    x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize
-                );
+                for (const obj of data.objects) {
+                    if (Math.random() < obj.chance) {
+                        cell.object = obj.name;
+                        break; // só 1 objeto por célula
+                    }
+                }
             }
         }
     }
 
-    //Renderizando mundo
-    private drawTransitionLayer(): void {
-        for (let y = 0; y < this.rows; y++) {
-
-            for (let x = 0; x < this.cols; x++) {
-
+    private drawTerrain(){
+        for(let y = 0; y < this.rows; y++){
+            for(let x = 0; x < this.cols; x++){
                 const cell = this.grid[y][x];
 
-                const transition = this.transitions[cell.terrain];
-                if(!transition) continue;
+                const data = this.terrainDataMap[cell.terrain];
+                if(!data) continue;
 
-                const bitmask = getBitmask(x, y, cell.terrain, transition.to, this.grid)
-                const tileName = getTransitionTile(bitmask);
-                const tileIndex = transition.tileMap[tileName] ?? transition.tileMap["full"];
+                const frameIndex = this.getAnimatedFrame(data.terrain.frames);
+                const img = this.loadedImages[data.terrain.tileSet];
 
-                const tilesPerRow: number = transition.tileset.width / this.tileSize;
-                const sx: number = (tileIndex % tilesPerRow) * this.tileSize;
-                const sy: number = Math.floor(tileIndex / tilesPerRow) * this.tileSize;
+                const tilesPerRow = img.width / this.tileSize;
+                const sx = (frameIndex % tilesPerRow) * this.tileSize;
+                const sy = Math.floor(frameIndex / tilesPerRow) * this.tileSize;
 
                 this.ctx.drawImage(
-                    transition.tileset,
+                    img,
                     sx, sy, this.tileSize, this.tileSize,
                     x * this.tileSize, y * this.tileSize,
-                    this.tileSize, this.tileSize
+                    this.tileSize, this.tileSize  
                 );
             }
         }
     }
 
-    private loadImage(img: HTMLImageElement): Promise<void> {
-        return new Promise((resolve) => {
-            img.onload = () => {
-                console.log('Imagem carregada:', img.src);
-                resolve();
-            };
-            img.onerror = () => {
-                console.error('Erro ao carregar imagem:', img.src);
-            };
-        });
+    private drawTransitions(){
+        for(let y = 0; y < this.rows; y++){
+            for(let x = 0; x < this.cols; x++){
+                const cell = this.grid[y][x];
+
+                const data = this.terrainDataMap[cell.terrain];
+                if(!data) continue;
+
+                const transition = data.transitions?.[cell.transition as Terrain];
+                if (!transition) continue;
+
+                const bitmask = getBitmask(x, y, cell.terrain, cell.transition!, this.grid);
+                if(bitmask == 0) continue;
+
+                const tileName = getTransitionTile(bitmask);
+                if (!tileName || !transition.tileMap[tileName]) continue;
+
+                const frame = transition.tileMap[tileName];
+
+                const img = this.loadedImages[transition.tileSet];
+
+                const tilesPerRow = img.width / this.tileSize;
+                const sx = (frame % tilesPerRow) * this.tileSize;
+                const sy = Math.floor(frame / tilesPerRow) * this.tileSize;
+
+                this.ctx.drawImage(
+                    img,
+                    sx, sy, this.tileSize, this.tileSize,
+                    x * this.tileSize, y * this.tileSize,
+                    this.tileSize, this.tileSize  
+                );
+            }
+        }
     }
 
-    public async loadTileSets(){
-        await Promise.all([
-            this.loadImage(this.floortileset),
-            this.loadImage(this.watertileset)
-        ]);
+    private drawObjects(){
+        for(let y = 0; y < this.rows; y++){
+            for(let x = 0; x < this.cols; x++){
+                const cell = this.grid[y][x];
+
+                const data = this.terrainDataMap[cell.terrain];
+                if (!data || !data.objects) continue;
+
+                if(!cell.object) continue;
+                
+                const obj = data.objects.find(o => o.name === cell.object)
+                if(!obj) continue;
+
+                const frameIndex = this.getAnimatedFrame(obj.frames);
+                const img = this.loadedImages[obj.tileSet];
+
+                const tilesPerRow = img.width / this.tileSize;
+                const sx = (frameIndex % tilesPerRow) * this.tileSize;
+                const sy = Math.floor(frameIndex / tilesPerRow) * this.tileSize;
+
+                this.ctx.drawImage(
+                    img,
+                    sx, sy, this.tileSize, this.tileSize,
+                    x * this.tileSize, y * this.tileSize,
+                    this.tileSize, this.tileSize  
+                );
+            }
+        }
+    }
+
+    private getAnimatedFrame(frames: number[]): number {
+        if (frames.length <= 1) return frames[0];
+        const index = Math.floor(this.animationFrame / this.animationSpeed) % frames.length;
+        return frames[index];
     }
 
     public drawWorld(){
-        this.drawBaseLayer();
-        this.drawTransitionLayer();
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.drawTerrain();
+        this.drawTransitions();
+        this.drawObjects();
+        //this.drawLayer("entity");
+        this.animationFrame++;
+        requestAnimationFrame(() => this.drawWorld())
     }
 }

@@ -16,7 +16,7 @@ export class Grid{
         return this.grid;
     }
 
-    public generate(freq:number){
+    public generate(freq:number, terrains: {terrain: Terrain; threshold: number}[]){
         const offsetX = Math.random() * 1000;
         const offsetY = Math.random() * 1000;
         const frequency = freq //0.035; //Controla a escala do ruído (quanto menor, mais "zoom")
@@ -34,11 +34,19 @@ export class Grid{
                 const noise = perlin2D((x + offsetX) * frequency, (y + offsetY) * frequency) //Ruído varia de -1 a 1
                 const r = (noise + 1) / 2;
                 
-                let terrain:Terrain = 'water'; //Padrão
-                if(r > 0.4) terrain = 'grass'; //Ponto mais alto
-                if(r > 0.6) terrain = 'dirt';
+                let terrain:Terrain = terrains[0].terrain;
+                let transition:Terrain = 'water';
 
-                row.push({ terrain }); //Adiciona uma célula na linha
+                for(let i = 0; i < terrains.length; i++){
+                    const current = terrains[i];
+                    if(r <= current.threshold){
+                        terrain = current.terrain;
+                        if(terrain == 'dirt') transition = 'grass'; //ARMENGUE!!!
+                        break;
+                    }
+                }
+
+                row.push({ terrain, transition }); //Adiciona uma célula na linha
             }
             this.grid.push(row); //Adiciona uma linha na matriz do mundo
         }

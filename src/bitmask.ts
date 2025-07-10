@@ -1,4 +1,4 @@
-import type { Terrain, WorldCell } from "./type";
+import type { Terrain, GridCell } from "./type";
 /**
  * Gera bitmask de vizinhança 8-direcional para transições de tile
  *
@@ -25,7 +25,7 @@ export function getBitmask(
   y: number,
   terrain: Terrain,
   transition: Terrain,
-  world: WorldCell[][]
+  world: GridCell[][]
 ): number {
   const rows = world.length;
   const cols = world[0].length;
@@ -82,35 +82,3 @@ export function getTransitionTile(mask: number):string {
   
   return "full"; // default (nenhum vizinho diferente)
 }
-
-export const grassTiles:Record<string,number> = {
-  border_top: 2,
-  border_bottom: 102,
-  border_left: 50,
-  border_right: 54,
-  corner_top_left: 26,
-  corner_top_right: 28,
-  corner_bottom_left: 76,
-  corner_bottom_right: 78,
-  inner_top_left: 1,
-  inner_top_right: 3,
-  inner_bottom_left: 101,
-  inner_bottom_right: 103,
-  full: 52
-};
-
-export const dirtTiles:Record<string,number> = {
-  border_top: 2,
-  border_bottom: 102,
-  border_left: 50,
-  border_right: 54,
-  corner_top_left: 26,
-  corner_top_right: 28,
-  corner_bottom_left: 76,
-  corner_bottom_right: 78,
-  inner_top_left: 1,
-  inner_top_right: 3,
-  inner_bottom_left: 101,
-  inner_bottom_right: 103,
-  full: 52
-};

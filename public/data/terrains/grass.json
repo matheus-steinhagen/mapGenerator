@@ -1,0 +1,63 @@
+{
+  "terrain": {
+    "tileSet": "Floors_Tiles.png",
+    "frames": [252,252,252,253,252,252,251]
+  },
+  "transitions": {
+    "water": {
+      "tileSet": "Water_Tiles.png",
+      "tileMap": {
+        "border_top": 2,
+        "border_bottom": 102,
+        "border_left": 50,
+        "border_right": 54,
+        "corner_top_left": 26,
+        "corner_top_right": 28,
+        "corner_bottom_left": 76,
+        "corner_bottom_right": 78,
+        "inner_top_left": 1,
+        "inner_top_right": 3,
+        "inner_bottom_left": 101,
+        "inner_bottom_right": 103
+      }
+    }
+  },
+  "objects": [
+    {
+      "name": "bush0",
+      "tileSet": "Vegetation.png",
+      "frames": [229],
+      "chance": 0.003
+    },
+    {
+      "name": "bush",
+      "tileSet": "Vegetation.png",
+      "frames": [227],
+      "chance": 0.02
+    },
+    {
+      "name": "bush2",
+      "tileSet": "Vegetation.png",
+      "frames": [228],
+      "chance": 0.02
+    },
+    {
+      "name": "flower",
+      "tileSet": "Vegetation.png",
+      "frames": [578],
+      "chance": 0.007
+    },
+    {
+      "name": "flower2",
+      "tileSet": "Vegetation.png",
+      "frames": [603],
+      "chance": 0.007
+    },
+    {
+      "name": "rock",
+      "tileSet": "Rocks.png",
+      "frames": [55],
+      "chance": 0.007
+    }
+  ]
+}
