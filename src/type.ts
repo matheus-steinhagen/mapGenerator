@@ -22,5 +22,6 @@ export type TerrainData = {
     tileSet: string;
     frames: number[];
     chance: number;
+    distribution?: "cluster" | "spread";
   }[];
 };

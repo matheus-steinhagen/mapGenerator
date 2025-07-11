@@ -1,8 +1,49 @@
 # 🗂 CHANGELOG
 
+## Versão 0.5 – Animações, Correções e Arquitetura Escalar (2025-07-11)
+
+### Novidades implementadas
+
+- **Correções automáticas de terreno:**
+  - Tiles isolados ou com baixo número de vizinhos agora são ajustados.
+  - Corrige erros visuais e evita transições quebradas.
+- **Perlin Noise com Fractal Brownian Motion (fBM):**
+  - Uso de múltiplas oitavas com `persistence` e `lacunarity`
+  - Mapas mais naturais, sem padrões visuais repetitivos
+- **Controle manual de thresholds por terreno**, permitindo ajustes finos nas proporções de cada relevo.
+
+### Refatorações importantes
+
+- `Grid.ts` agora:
+  - Recebe thresholds dinâmicos
+  - Usa `fbm2D()` para suavizar a distribuição de terrenos
+- Nova função `terrainCorrections()` no Render:
+  - Executa uma varredura em 4 direções para corrigir terrenos isolados
+  - Atualiza também a transição correspondente
+
+### Problemas resolvidos
+
+- Corrigido bug de tiles quebrados em lagos ou transições mal aplicadas
+- Corrigido erro de objetos sumirem com a chegada da animação
+- Evitado que múltiplos objetos sejam aplicados na mesma célula
+
+### Exemplo visual atual
+
+- Transições suaves e consistentes
+- Água, grama e lama com regiões naturais
+- Mapa com 44x78, renderização clara e estável
+- Objetos variados com agrupamentos coerentes
+
+---
+
+## Próxima versão: 0.6 (Terreno Elevado + Objetos Grandes)
+
+**Objetivo:** Implementar geração de elevações (paredes, platôs, planaltos) e suporte a árvores ou estruturas com múltiplos tiles.
+
 ## Versão 0.4 — Terrenos modulares, animações e objetos
 
 ### Novidades
+
 - Arquitetura baseada em arquivos JSON para cada terreno
 - Suporte a animações por frame em terrenos e objetos
 - Renderização procedural de objetos com chance de aparição
@@ -24,7 +65,7 @@
 
 ## v0.3 — Estrutura modular com classes Grid e Render
 
-### ✨ Novidades
+### Novidades
 - Refatoração completa da estrutura do projeto
 - Criação da classe `Grid` para geração procedural com Perlin Noise
 - Criação da classe `Render` para visualização desacoplada
@@ -34,14 +75,14 @@
 - Transições de tiles com bitmask e seleção de tile gráfico
 - Melhor uso do TypeScript: interfaces e tipos fortes
 
-### 🔧 Melhorias Técnicas
+### Melhorias Técnicas
 - Tipagem forte em todas as estruturas do mapa (`GridCell`, `Terrain`, etc.)
 - Modularização clara com arquivos separados (`Grid.ts`, `Render.ts`, etc.)
 - `tileSize` como variável configurável
 - Carregamento assíncrono de imagens controlado por `Promise.all`
 - Renderização com `drawBaseLayer()` + `drawTransitionLayer()`
 
-### 🧭 Próximos passos (v0.4)
+### Próximos passos (v0.4)
 - Implementar camadas (base, transição, objetos, entidades)
 - Introduzir sistema de biomas com mapas auxiliares (umidade, temperatura)
 - Adicionar objetos visuais como árvores, pedras e ruínas

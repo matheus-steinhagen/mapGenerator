@@ -7,6 +7,35 @@
  */
 
 /**
+ * PERMUTATION TABLE
+ * ====================
+ * Fonte de entropia, aleatoriedade determinística - Gerar vetores de gradientes únicos por célula
+ * Vetor de 256 números (0 a 255)
+ * Rearranjados em uma ordem pseudoaleatória
+ * Sem repetiçao
+ */
+const permutation = [
+  151,160,137,91,90,15,
+  131,13,201,95,96,53,194,233,7,225,
+  140,36,103,30,69,142,8,99,37,240,21,10,23,
+  190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,
+  35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,
+  168, 68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,
+  111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
+  102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208,
+  89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,
+  186, 3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,
+  82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,
+  183,170,213,119,248,152, 2,44,154,163,70,221,153,101,155,167,
+  43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,
+  185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,
+  179,162,241, 81,51,145,235,249,14,239,107,49,192,214,31,181,
+  199,106,157,184,84,204,176,115,121,50,45,127, 4,150,254,138,
+  236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215
+];
+const p = [...permutation, ...permutation];
+
+/**
  * Linear Interpolation
  * ====================
  * Coração do ruído de Perlin
@@ -54,40 +83,16 @@ const grad2D: [number, number][] = [
     [1, 1], [-1, 1], [1, -1], [-1, -1]
 ]
 
-/**
- * Produto escalar entre o vetor gradiente e a distância ao ponto
- * ====================
- * Calcula o produto escalar entre
- *  > o vetor distância e,
- *  > o vetor gradiente
- *
- * @param ix 
- * @param iy //Coordenadas da celula
- * @param x 
- * @param y //Coordenadas do ruído
- * @returns 
- */
-function dotGridGradient(ix: number, iy: number, x: number, y: number): number {
-
-    //Vetor de distância do ponto até o canto
-    const dx = x - ix;
-    const dy = y - iy;
-
-    //Selecionar um vetor gradiente pseudoaleatório (fixo para consistência)
-    //  Forma simples de garantir que a coordenada das células sempre produza o mesmo vetor gradiente
-    const index = (ix + iy * 57) % grad2D.length; //Multiplicar iy por um número primo (como 57) reduz colisões
-    const grad = grad2D[Math.abs(index)];
-
-    //Produto escalar entre o vetor de distância e o vetor gradiente
-    return dx * grad[0] + dy * grad[1];
+function gradient(hash: number, x: number, y: number): number {
+    const g = grad2D[hash & 7];
+    return g[0] * x + g[1] * y;
 }
 
 /**
- * - Descobre em que célula o ponto (x, y) está
- * - Calcula os vetores distânci para os 4 cantos da célula
- * - Usa `dotGridGradient()` para pegar a influência de cada canto
- * - Suaviza os fatores com `fade()`
- * - Usa `lerp()` duas vezes para interpolar entre os 4 valores e retorna o valor final
+ * PERLIN NOISE
+ * ====================
+ * Recebe um ponto (x, y) qualquer e retorna um valor suave e contínuo entre -1 e 1
+ * Ele usa como base os vetores de gradiente pseudoaleatórios nos cantos das células
  * 
  * @param x 
  * @param y
@@ -95,40 +100,27 @@ function dotGridGradient(ix: number, iy: number, x: number, y: number): number {
  */
 export function perlin2D(x:number, y:number):number{
 
-    //Encontra a célula que contém o ponto
-    const x0 = Math.floor(x);
-    const x1 = x0 + 1;
-    const y0 = Math.floor(y);
-    const y1 = y0 + 1;
+    const X = Math.floor(x) & 255;
+    const Y = Math.floor(y) & 255;
+    //(& 255) Máscara binária - garante X e Y fiquem sempre entre 0 e 255
 
-    //Distâncias relativas dentro da célula
-    const sx = x - x0;
-    const sy = y - y0;
+    const xf = x - Math.floor(x);
+    const yf = y - Math.floor(y);
 
-    //Calculo da influência dos cantos
-    //  Produto escalar entre o vetor gradiente e vetor distância nos 4 cantos da célula
-    //  4 chamadas, que representam os 4 cantos da célula em que o ponto (x, y) está
-    const n0 = dotGridGradient(x0, y0, x, y); //Canto inferior esquerdo
-    const n1 = dotGridGradient(x1, y0, x, y); //Canto inferior direito
-    const n2 = dotGridGradient(x0, y1, x, y); //Canto superior esquerdo
-    const n3 = dotGridGradient(x1, y1, x, y); //Canto superior direito
+    const u = fade(xf);
+    const v = fade(yf);
 
-    //Suaviza as distâncias relativas (sx e sy)
-    //  Evita que o ruído tenha "degraus" ou transições bruscas
-    //  u e v serão usados como fatores de interpolação
-    const u = fade(sx);
-    const v = fade(sy);
+    //Indexação dos vetores gradientes pseudoaleatórios nos 4 cantos da célula
+    //p[X] + Y Hash bidimensional - um jeito de misturar X e Y para obter um índice único
+    const aa = p[p[X] + Y]; // Duplo acesso à permutação (embaralha duas vezes)
+    const ab = p[p[X] + Y + 1];
+    const ba = p[p[X + 1] + Y];
+    const bb = p[p[X + 1] + Y + 1];
+    //As variáveis são os índices que serão usados para determinar os vetores de gradiente
 
-    //Interpola horizontalmente os valores da linha inferior (n0 e n1) e a linha superior (n2 e n3)
-    //  u controla o quanto avançamos para a direita
-    const ix0 = lerp(n0, n1, u);
-    const ix1 = lerp(n2, n3, u);
+    const x1 = lerp(gradient(aa, xf, yf), gradient(ba, xf - 1, yf), u);
+    const x2 = lerp(gradient(ab, xf, yf - 1), gradient(bb, xf -1, yf - 1), u);
 
-    //Interpola verticalmente os dois valores interpolados horizontalmente
-    //  v controla a interpolação vertical
-    const value = lerp(ix0, ix1, v)
+    return lerp(x1, x2, v);
 
-    //O valor retornado está entre aproximadamente -1 e 1
-    //  Pode ser usado para gerar texturas, terrenos ou padrões naturais
-    return value;
 }

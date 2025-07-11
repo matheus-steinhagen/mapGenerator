@@ -1,5 +1,5 @@
 import type { Terrain, GridCell} from "./type";
-import { perlin2D } from "./perlinNoise";
+import { fbm2D } from "./fractalBrownianMotion";
 
 export class Grid{
 
@@ -31,8 +31,14 @@ export class Grid{
             for(let x = 0; x < this.cols; x++){
 
                 //Usamos Perlin para gerar padrões naturais
-                const noise = perlin2D((x + offsetX) * frequency, (y + offsetY) * frequency) //Ruído varia de -1 a 1
-                const r = (noise + 1) / 2;
+                const noise = fbm2D(
+                    (x + offsetX) * frequency,
+                    (y + offsetY) * frequency,
+                    6,      // octaves
+                    0.1,    // persistence
+                    7.0     // lacunarity
+                );
+                const r = (noise + 1) / 2
                 
                 let terrain:Terrain = terrains[0].terrain;
                 let transition:Terrain = 'water';

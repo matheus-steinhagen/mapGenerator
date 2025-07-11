@@ -3,23 +3,23 @@ import { Grid } from "./Grid";
 import { Render } from "./Render";
 
 //Determinar tamanho do mapa
-const rows = 35
-const cols = 50;
+const rows = 44
+const cols = 78;
 
 //Determinar frequencia do ruído de Perlin
-const frequency = 0.035
+const frequency = 0.05
 
 //Determinar tamanho dos tiles
 const tileSize = 16;
 
 //Escolher terrenos
-const activeTerrains:  Terrain[] = ['water', 'grass', 'dirt'];
+const terrainList:  Terrain[] = ['water', 'grass', 'dirt'];
+const thresholdList: number[] = [0.38, 0.6, 1];
 
 function generateThresholds(): { terrain: Terrain; threshold: number }[]{
-  const step = 1 / activeTerrains.length;
-  return activeTerrains.map((terrain, i) => ({
+  return terrainList.map((terrain, i) => ({
     terrain,
-    threshold: (i + 1) * step
+    threshold: thresholdList[i]
   }));
 }
 
@@ -30,8 +30,11 @@ async function start() {
   grid.generate(frequency, thresholds);
 
   const render = new Render(grid.get(), tileSize);
-  await render.loadTerrainDataFromJSON(activeTerrains);
-  render.generateObjects();
+  await render.loadTerrainDataFromJSON(terrainList);
+  render.terrainCorrections();
+  render.terrainCorrections();
+  render.generateObjectClusters(0.75);
+  render.generateObjects(); 
   render.drawWorld();
 }
 

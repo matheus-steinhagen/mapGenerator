@@ -27,37 +27,43 @@
       "name": "bush0",
       "tileSet": "Vegetation.png",
       "frames": [229],
-      "chance": 0.003
+      "chance": 0.2,
+      "distribution": "cluster"
     },
     {
       "name": "bush",
       "tileSet": "Vegetation.png",
       "frames": [227],
-      "chance": 0.02
+      "chance": 0.01,
+      "distribution": "spread"
     },
     {
       "name": "bush2",
       "tileSet": "Vegetation.png",
       "frames": [228],
-      "chance": 0.02
+      "chance": 0.02,
+      "distribution": "spread"
     },
     {
       "name": "flower",
       "tileSet": "Vegetation.png",
       "frames": [578],
-      "chance": 0.007
+      "chance": 0.2,
+      "distribution": "cluster"
     },
     {
       "name": "flower2",
       "tileSet": "Vegetation.png",
       "frames": [603],
-      "chance": 0.007
+      "chance": 0.2,
+      "distribution": "cluster"
     },
     {
       "name": "rock",
       "tileSet": "Rocks.png",
       "frames": [55],
-      "chance": 0.007
+      "chance": 0.01,
+      "distribution": "spread"
     }
   ]
 }

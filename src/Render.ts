@@ -1,5 +1,6 @@
 import type { Terrain, GridCell, TerrainData } from "./type";
 import { getBitmask, getTransitionTile} from "./bitmask";
+import { fbm2D } from "./fractalBrownianMotion";
 
 
 export class Render{
@@ -78,11 +79,91 @@ export class Render{
                 const data = this.terrainDataMap[cell.terrain];
                 if (!data || !data.objects) continue;
 
-                for (const obj of data.objects) {
+                const spreadObjects = data.objects.filter(o => o.distribution === "spread");
+                for (const obj of spreadObjects) {
                     if (Math.random() < obj.chance) {
                         cell.object = obj.name;
                         break; // só 1 objeto por célula
                     }
+                }
+            }
+        }
+    }
+
+    public generateObjectClusters(densityThreshold = 0.7):void {
+        const scale = 0.1; //Tanho dos aglomerados
+        const offsetX = Math.random() * 1000;
+        const offsetY = Math.random() * 1000;
+
+        for(let y = 0; y < this.rows; y++){
+            for(let x = 0; x < this.cols; x++){
+
+                const cell = this.grid[y][x];
+                if(cell.object) continue;
+
+                const data = this.terrainDataMap[cell.terrain];
+                if(!data || !data.objects) continue;
+
+                const noiseValue = fbm2D(
+                    (x + offsetX) * scale,
+                    (y + offsetY) * scale,
+                    6,      // octaves
+                    0.1,    // persistence
+                    7.0     // lacunarity
+                );
+                const normalized = (noiseValue + 1) / 2;
+
+                if(normalized < densityThreshold) continue;
+
+                const clusterObjects = data.objects.filter(o => o.distribution === "cluster");
+                for(const obj of clusterObjects){
+                    if(Math.random() < obj.chance){
+                        cell.object = obj.name;
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    public terrainCorrections(){
+        for (let y = 1; y < this.rows - 1; y++) {
+            for (let x = 1; x < this.cols - 1; x++) {
+                const cell = this.grid[y][x];
+
+                // Vizinhaça 8-direcional
+                const neighbors = [
+                this.grid[y - 1][x],     // cima
+                //this.grid[y - 1][x + 1], // cima direita
+                this.grid[y][x + 1],     // direita
+                //this.grid[y + 1][x + 1], // baixo direita
+                this.grid[y + 1][x],     // baixo
+                //this.grid[y + 1][x - 1], // baixo esquerda
+                this.grid[y][x - 1],     // esquerda
+                //this.grid[y - 1][x - 1]  // cima esquerda
+                ];
+
+                let sameCount = 0;
+                const terrainCount: Record<Terrain, number> = {} as any;
+
+                for (const neighbor of neighbors) {
+                    // Conta número de vizinhos iguais
+                    if (neighbor.terrain === cell.terrain) sameCount++;
+
+                    // Contagem de cada tipo de terreno
+                    const t = neighbor.terrain;
+                    terrainCount[t] = (terrainCount[t] ?? 0) + 1;
+                }
+
+                // Se a célula estiver isolada ou quase isolada
+                if (sameCount <= 1) {
+                    const predominant = Object.entries(terrainCount)
+                    .sort((a, b) => b[1] - a[1])[0][0] as Terrain;
+
+                    cell.terrain = predominant;
+
+                    if(predominant == 'grass') cell.transition = 'water'
+                    else if(predominant == 'dirt') cell.transition = 'grass'
                 }
             }
         }

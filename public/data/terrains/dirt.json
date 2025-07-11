@@ -27,19 +27,22 @@
       "name": "rock",
       "tileSet": "Rocks.png",
       "frames": [42],
-      "chance": 0.005
+      "chance": 0.01,
+      "distribution": "spread"
     },
     {
       "name": "rock1",
       "tileSet": "Rocks.png",
       "frames": [55],
-      "chance": 0.005
+      "chance": 0.01,
+      "distribution": "spread"
     },
     {
       "name": "rock2",
       "tileSet": "Rocks.png",
       "frames": [67],
-      "chance": 0.005
+      "chance": 0.02,
+      "distribution": "spread"
     }
   ]
 }
