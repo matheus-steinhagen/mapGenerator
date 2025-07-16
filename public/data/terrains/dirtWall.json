@@ -1,0 +1,75 @@
+{
+  "terrain": {
+    "tileSet": "Wall_Tiles.png",
+    "frames": [27]
+  },
+  "transition": {
+    "name": "dirtWall",
+    "tileSet": "Wall_Tiles.png",
+    "tileMap": {
+      "full": 77,
+
+      "border_top": 2,
+      "border_bottom": 127,
+      "border_left": 75,
+      "border_right": 80,
+
+      "corner_top_left": 26,
+      "corner_top_right": 29,
+      "corner_bottom_left": 101,
+      "corner_bottom_right": 104,
+
+      "inner_top_left": 1,
+      "inner_top_right": 4,
+      "inner_bottom_left": 126,
+      "inner_bottom_right": 129,
+
+      "full_wall": 203,
+
+      "border_top_wall": 152,
+      "border_bottom_wall": 327,
+      "border_left_wall": 150,
+      "border_right_wall": 155,
+
+      "corner_top_left_wall": 154,
+      "corner_top_right_wall": 151,
+      "corner_bottom_left_wall": 176,
+      "corner_bottom_right_wall": 179,
+
+      "inner_top_left_wall": 125,
+      "inner_top_right_wall": 130,
+      "inner_bottom_left_wall": 326,
+      "inner_bottom_right_wall": 329
+    }
+  },
+  "objects": [
+    {
+      "name": "littleMushroom",
+      "tileSet": "Vegetation.png",
+      "frames": [526],
+      "chance": 0.4,
+      "distribution": "cluster"
+    },
+    {
+      "name": "mushroom",
+      "tileSet": "Vegetation.png",
+      "frames": [527],
+      "chance": 0.4,
+      "distribution": "cluster"
+    },
+    {
+      "name": "bigMushroom",
+      "tileSet": "Vegetation.png",
+      "frames": [528],
+      "chance": 0.4,
+      "distribution": "cluster"
+    },
+    {
+      "name": "rock",
+      "tileSet": "Rocks.png",
+      "frames": [55],
+      "chance": 0.01,
+      "distribution": "spread"
+    }
+  ]
+}

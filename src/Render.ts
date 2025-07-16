@@ -1,6 +1,6 @@
-import type { Terrain, GridCell, TerrainData } from "./type";
+import type { Terrain, GridCell, TerrainData} from "./type";
 import { getBitmask, getTransitionTile} from "./bitmask";
-import { fbm2D } from "./fractalBrownianMotion";
+import { getWallBitmask, getWallTileName } from './getWallBitmask';
 
 
 export class Render{
@@ -13,17 +13,20 @@ export class Render{
     private cols:number;
     private rows:number;
 
-    private terrainDataMap: Partial<Record<Terrain, TerrainData>> = {};
-    private loadedImages: Record<string,HTMLImageElement> = {};
+    private terrainDataMap: Map<Terrain, TerrainData>;
+    private imageMap: Map<string,HTMLImageElement>;
 
     private animationFrame: number = 0;
     private animationSpeed: number = 45; // menor = mais rápido
 
-    constructor(grid:GridCell[][],tileSize:number){
+    constructor(grid:GridCell[][],tileSize:number, terrainDataMap: Map<Terrain, TerrainData>, imageMap: Map<string,HTMLImageElement>){
         this.grid = grid;
         this.cols = grid[0].length;
         this.rows = grid.length;
         this.tileSize = tileSize;
+
+        this.terrainDataMap = terrainDataMap;
+        this.imageMap = imageMap;
 
         const canvas = document.getElementById('world') as HTMLCanvasElement;
         if (!canvas) throw new Error(`Canvas não encontrado.`);
@@ -37,148 +40,17 @@ export class Render{
         this.canvas.height = this.rows * this.tileSize;
     }
 
-    public async loadTerrainDataFromJSON(terrainList: Terrain[]){
-        for(const terrain of terrainList){
-            const response = await fetch(`/data/terrains/${terrain}.json`);
-            const data: TerrainData = await response.json();
-            this.terrainDataMap[terrain] = data;
-
-            //Carregar tilesets necessários
-            const imagesToLoad: Set<string> = new Set();
-            imagesToLoad.add(data.terrain.tileSet);
-
-            if(data.transitions){
-                for(const key in data.transitions){
-                    imagesToLoad.add(data.transitions[key as Terrain].tileSet);
-                }
-            }
-            if(data.objects){
-                for(const key in data.objects){
-                    imagesToLoad.add(data.objects[key].tileSet)
-                }
-            }
-
-            //Carregar imagens
-            for(const src of imagesToLoad){
-                if(!this.loadedImages[src]){
-                    const img = new Image();
-                    img.src = `/assets/${src}`;
-                    await img.decode();
-                    this.loadedImages[src] = img
-                }
-            }
-        }
-    }
-
-    public generateObjects(): void {
-        for (let y = 0; y < this.rows; y++) {
-            for (let x = 0; x < this.cols; x++) {
-                const cell = this.grid[y][x];
-                if (cell.object) continue; // já possui objeto
-
-                const data = this.terrainDataMap[cell.terrain];
-                if (!data || !data.objects) continue;
-
-                const spreadObjects = data.objects.filter(o => o.distribution === "spread");
-                for (const obj of spreadObjects) {
-                    if (Math.random() < obj.chance) {
-                        cell.object = obj.name;
-                        break; // só 1 objeto por célula
-                    }
-                }
-            }
-        }
-    }
-
-    public generateObjectClusters(densityThreshold = 0.7):void {
-        const scale = 0.1; //Tanho dos aglomerados
-        const offsetX = Math.random() * 1000;
-        const offsetY = Math.random() * 1000;
-
-        for(let y = 0; y < this.rows; y++){
-            for(let x = 0; x < this.cols; x++){
-
-                const cell = this.grid[y][x];
-                if(cell.object) continue;
-
-                const data = this.terrainDataMap[cell.terrain];
-                if(!data || !data.objects) continue;
-
-                const noiseValue = fbm2D(
-                    (x + offsetX) * scale,
-                    (y + offsetY) * scale,
-                    6,      // octaves
-                    0.1,    // persistence
-                    7.0     // lacunarity
-                );
-                const normalized = (noiseValue + 1) / 2;
-
-                if(normalized < densityThreshold) continue;
-
-                const clusterObjects = data.objects.filter(o => o.distribution === "cluster");
-                for(const obj of clusterObjects){
-                    if(Math.random() < obj.chance){
-                        cell.object = obj.name;
-                        break
-                    }
-                }
-            }
-        }
-    }
-
-    public terrainCorrections(){
-        for (let y = 1; y < this.rows - 1; y++) {
-            for (let x = 1; x < this.cols - 1; x++) {
-                const cell = this.grid[y][x];
-
-                // Vizinhaça 8-direcional
-                const neighbors = [
-                this.grid[y - 1][x],     // cima
-                //this.grid[y - 1][x + 1], // cima direita
-                this.grid[y][x + 1],     // direita
-                //this.grid[y + 1][x + 1], // baixo direita
-                this.grid[y + 1][x],     // baixo
-                //this.grid[y + 1][x - 1], // baixo esquerda
-                this.grid[y][x - 1],     // esquerda
-                //this.grid[y - 1][x - 1]  // cima esquerda
-                ];
-
-                let sameCount = 0;
-                const terrainCount: Record<Terrain, number> = {} as any;
-
-                for (const neighbor of neighbors) {
-                    // Conta número de vizinhos iguais
-                    if (neighbor.terrain === cell.terrain) sameCount++;
-
-                    // Contagem de cada tipo de terreno
-                    const t = neighbor.terrain;
-                    terrainCount[t] = (terrainCount[t] ?? 0) + 1;
-                }
-
-                // Se a célula estiver isolada ou quase isolada
-                if (sameCount <= 1) {
-                    const predominant = Object.entries(terrainCount)
-                    .sort((a, b) => b[1] - a[1])[0][0] as Terrain;
-
-                    cell.terrain = predominant;
-
-                    if(predominant == 'grass') cell.transition = 'water'
-                    else if(predominant == 'dirt') cell.transition = 'grass'
-                }
-            }
-        }
-    }
-
-    private drawTerrain(){
+    private drawTerrain(): void {
         for(let y = 0; y < this.rows; y++){
             for(let x = 0; x < this.cols; x++){
                 const cell = this.grid[y][x];
 
-                const data = this.terrainDataMap[cell.terrain];
+                const data = this.terrainDataMap.get(cell.terrain);
                 if(!data) continue;
 
                 const frameIndex = this.getAnimatedFrame(data.terrain.frames);
-                const img = this.loadedImages[data.terrain.tileSet];
+                const img = this.imageMap.get(data.terrain.tileSet);
+                if(!img) continue;
 
                 const tilesPerRow = img.width / this.tileSize;
                 const sx = (frameIndex % tilesPerRow) * this.tileSize;
@@ -190,30 +62,33 @@ export class Render{
                     x * this.tileSize, y * this.tileSize,
                     this.tileSize, this.tileSize  
                 );
+                //x.ctx.drawImage(img, a, b, x, y)
             }
         }
     }
 
-    private drawTransitions(){
-        for(let y = 0; y < this.rows; y++){
-            for(let x = 0; x < this.cols; x++){
+    private drawTransitions(): void {
+        for (let y = 0; y < this.rows; y++) {
+            for (let x = 0; x < this.cols; x++) {
+
                 const cell = this.grid[y][x];
+                if(cell.terrain == "dirtWall") continue;
 
-                const data = this.terrainDataMap[cell.terrain];
-                if(!data) continue;
+                const data = this.terrainDataMap.get(cell.terrain);
+                if (!data) continue;
 
-                const transition = data.transitions?.[cell.transition as Terrain];
+                const transition = data.transition;
                 if (!transition) continue;
 
-                const bitmask = getBitmask(x, y, cell.terrain, cell.transition!, this.grid);
-                if(bitmask == 0) continue;
+                const bitmask = getBitmask(x, y, cell.terrain, transition.name, this.grid);
+                if (bitmask === 0) continue;
 
                 const tileName = getTransitionTile(bitmask);
-                if (!tileName || !transition.tileMap[tileName]) continue;
+                if (!tileName) continue;
 
                 const frame = transition.tileMap[tileName];
-
-                const img = this.loadedImages[transition.tileSet];
+                const img = this.imageMap.get(transition.tileSet);
+                if (!img) continue;
 
                 const tilesPerRow = img.width / this.tileSize;
                 const sx = (frame % tilesPerRow) * this.tileSize;
@@ -223,18 +98,21 @@ export class Render{
                     img,
                     sx, sy, this.tileSize, this.tileSize,
                     x * this.tileSize, y * this.tileSize,
-                    this.tileSize, this.tileSize  
+                    this.tileSize, this.tileSize
                 );
             }
         }
     }
 
-    private drawObjects(){
+    private drawObjects(): void {
         for(let y = 0; y < this.rows; y++){
             for(let x = 0; x < this.cols; x++){
                 const cell = this.grid[y][x];
 
-                const data = this.terrainDataMap[cell.terrain];
+                // Só desenha se for a origem do objeto
+                if (!cell.object || cell.occupied) continue;
+
+                const data = this.terrainDataMap.get(cell.terrain);
                 if (!data || !data.objects) continue;
 
                 if(!cell.object) continue;
@@ -243,18 +121,98 @@ export class Render{
                 if(!obj) continue;
 
                 const frameIndex = this.getAnimatedFrame(obj.frames);
-                const img = this.loadedImages[obj.tileSet];
+                const img = this.imageMap.get(obj.tileSet);
+                if(!img) continue;
 
                 const tilesPerRow = img.width / this.tileSize;
                 const sx = (frameIndex % tilesPerRow) * this.tileSize;
                 const sy = Math.floor(frameIndex / tilesPerRow) * this.tileSize;
 
+                // Dimensões do objeto
+                const drawX = x - Math.floor(obj.width! / 2);
+                const drawY = y - obj.height! + 1;
+
+                this.ctx.drawImage(
+                    img,
+                    sx, sy,
+                    obj.width! * this.tileSize, obj.height! * this.tileSize,
+                    drawX * this.tileSize, drawY * this.tileSize,
+                    obj.width! * this.tileSize, obj.height! * this.tileSize
+                );
+            }
+        }
+    }
+
+    public processWalls(height: number): void {
+        for (let x = 0; x < this.cols; x++) {
+            let y = this.rows - 1;
+
+            while (y >= 0) {
+                // Procurar uma sequência contínua de dirtWall de baixo para cima
+                let startY = y;
+                let count = 0;
+
+                while (y >= 0 && this.grid[y][x].terrain === 'dirtWall') {
+                    count++;
+                    y--;
+                }
+
+                if (count > 0) {
+                    if (count >= height + 2) {
+
+                        // Marca os últimos `height` tiles da sequência como wall = true
+                        for (let i = 0; i < count; i++) {
+                            const cy = startY - i;
+                            if (i < height) this.grid[cy][x].wall = true;
+                            //else  this.grid[cy][x].terrain = "dirt";
+                        }
+                    } else {
+                        // Corrige todos para dirt se a sequência for menor que height
+                        for (let i = 0; i < count; i++) {
+                            const cy = startY - i;
+                            this.grid[cy][x].terrain = 'dirt';
+                        }
+                    }
+                }
+
+                y--; // continua varrendo acima da sequência
+            }
+        }
+    }
+
+    private drawWalls(): void {
+        for (let y = 0; y < this.rows; y++) {
+            for (let x = 0; x < this.cols; x++) {
+
+                const cell = this.grid[y][x];
+                if (cell.terrain !== 'dirtWall') continue;
+
+                const data = this.terrainDataMap.get(cell.terrain);
+                if (!data) continue;
+
+                const transition = data.transition;
+                if (!transition) continue;
+
+                const bitmask = getWallBitmask(x, y, this.grid, cell.wall!);
+                const tileName = getWallTileName(bitmask, cell.wall!);
+
+                const frame = transition.tileMap[tileName];
+
+                const img = this.imageMap.get(data.terrain.tileSet);
+                if (!img) continue;
+
+                const tilesPerRow = Math.floor(img.width / this.tileSize);
+                const sx = (frame % tilesPerRow) * this.tileSize;
+                const sy = Math.floor(frame / tilesPerRow) * this.tileSize;
+
                 this.ctx.drawImage(
                     img,
                     sx, sy, this.tileSize, this.tileSize,
                     x * this.tileSize, y * this.tileSize,
-                    this.tileSize, this.tileSize  
+                    this.tileSize, this.tileSize
                 );
+
+                //cell.terrain = 'dirt';
             }
         }
     }
@@ -269,6 +227,7 @@ export class Render{
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawTerrain();
         this.drawTransitions();
+        this.drawWalls();
         this.drawObjects();
         //this.drawLayer("entity");
         this.animationFrame++;
